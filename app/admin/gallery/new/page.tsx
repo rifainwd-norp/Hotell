@@ -3,6 +3,11 @@ import Link from "next/link";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 
 export default function NewGalleryItemPage() {
+  async function handleAddGalleryItem(formData: FormData) {
+    "use server";
+    await addGalleryItem(formData);
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header>
@@ -14,7 +19,7 @@ export default function NewGalleryItemPage() {
         <p className="text-slate-400 mt-1">Input the URL of the lifestyle image you want to showcase.</p>
       </header>
 
-      <form action={addGalleryItem} className="bg-slate-900/50 p-8 rounded-3xl border border-gold-500/10 space-y-6">
+      <form action={handleAddGalleryItem} className="bg-slate-900/50 p-8 rounded-3xl border border-gold-500/10 space-y-6">
         <div className="space-y-2">
           <label className="text-sm font-sans text-slate-400 uppercase tracking-wider">Image Title</label>
           <input 

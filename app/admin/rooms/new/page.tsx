@@ -3,6 +3,11 @@ import Link from "next/link";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 
 export default function NewRoomPage() {
+  async function handleCreateRoom(formData: FormData) {
+    "use server";
+    await createRoom(formData);
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       <header>
@@ -14,7 +19,7 @@ export default function NewRoomPage() {
         <p className="text-slate-400 mt-1">Add a new luxury suite or villa to your hotel collection.</p>
       </header>
 
-      <form action={createRoom} className="space-y-6">
+      <form action={handleCreateRoom} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-sm font-sans text-slate-400 uppercase tracking-wider">Room Name</label>

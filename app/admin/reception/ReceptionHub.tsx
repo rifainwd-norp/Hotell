@@ -21,20 +21,30 @@ const formatIDR = (amount: number) => {
   }).format(amount);
 };
 
-export default function ReceptionHub({ allRooms, allBookings }: { allRooms: Room[], allBookings: Booking[] }) {
+export default function ReceptionHub({ 
+  allRooms, 
+  allBookings,
+  initialArrivals: propArrivals,
+  initialStaying: propStaying
+}: { 
+  allRooms: Room[], 
+  allBookings: Booking[],
+  initialArrivals?: Booking[],
+  initialStaying?: Booking[]
+}) {
   const [search, setSearch] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const today = new Date().toISOString().split('T')[0];
 
-  // Logic to separate arrivals and staying guests
+  // Use props as initial data if available, fallback to manual filter
   const initialArrivals = useMemo(() => 
-    allBookings.filter(b => (b.status === 'confirmed' || b.status === 'pending')),
-    [allBookings]
+    propArrivals || allBookings.filter(b => (b.status === 'confirmed' || b.status === 'pending')),
+    [allBookings, propArrivals]
   );
 
   const initialStaying = useMemo(() => 
-    allBookings.filter(b => b.status === 'checked_in'),
-    [allBookings]
+    propStaying || allBookings.filter(b => b.status === 'checked_in'),
+    [allBookings, propStaying]
   );
 
   // Status for Room Grid

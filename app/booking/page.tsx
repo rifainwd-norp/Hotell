@@ -1,9 +1,7 @@
-import { getRooms } from "@/lib/data";
 import { BookingForm } from "@/components/booking/booking-form";
 import { Suspense } from "react";
 
 export default async function BookingPage() {
-  const rooms = await getRooms();
 
   return (
     <main className="bg-slate-950 min-h-screen pt-[200px] pb-[128px]">
@@ -45,7 +43,7 @@ export default async function BookingPage() {
           <div className="lg:col-span-7 bg-white/2 border border-white/5 p-12 lg:p-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
             <Suspense fallback={<div className="text-white/20 uppercase tracking-widest text-[10px] text-center py-20">Initializing Concierge...</div>}>
-              <BookingForm rooms={rooms} />
+              <BookingForm />
             </Suspense>
           </div>
 
