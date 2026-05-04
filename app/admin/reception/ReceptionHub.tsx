@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { HiOutlineSearch, HiOutlineLogin, HiOutlineCalendar, HiOutlineKey, HiOutlineChartBar, HiOutlinePlus } from "react-icons/hi";
+import { HiOutlineSearch, HiOutlineLogin, HiOutlineCalendar, HiOutlineKey, HiOutlineChartBar, HiOutlinePlus, HiOutlineFilter } from "react-icons/hi";
 import { CheckInBookingButton, CheckOutBookingButton, ExtendStayButton } from "@/components/admin/action-buttons";
 import { Booking, Room } from "@/lib/types";
 import clsx from "clsx";
@@ -10,6 +10,7 @@ import {
   HiOutlineUser, 
   HiOutlineX, 
 } from "react-icons/hi";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Shared IDR Formatter
 const formatIDR = (amount: number) => {
@@ -33,8 +34,16 @@ export default function ReceptionHub({
   initialStaying?: Booking[]
 }) {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "occupied" | "booked">("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const today = new Date().toISOString().split('T')[0];
+
+  // Get unique room types for filter
+  const roomTypes = useMemo(() => {
+    const types = new Set(allRooms.map(r => r.tagline).filter(Boolean));
+    return ["all", ...Array.from(types)];
+  }, [allRooms]);
 
   // Use props as initial data if available, fallback to manual filter
   const initialArrivals = useMemo(() => 
@@ -81,7 +90,20 @@ export default function ReceptionHub({
       (r.tagline || "").toLowerCase().includes(term) ||
       (r.guest || "").toLowerCase().includes(term);
 
-    const filteredRooms = roomStatus.filter(matchesSearch);
+    const matchesStatus = (r: { isOccupied: boolean; isBooked: boolean }) => {
+      if (statusFilter === "all") return true;
+      if (statusFilter === "occupied") return r.isOccupied;
+      if (statusFilter === "booked") return r.isBooked;
+      if (statusFilter === "available") return !r.isOccupied && !r.isBooked;
+      return true;
+    };
+
+    const matchesType = (r: { tagline?: string }) => {
+      if (typeFilter === "all") return true;
+      return r.tagline === typeFilter;
+    };
+
+    const filteredRooms = roomStatus.filter(r => matchesSearch(r) && matchesStatus(r) && matchesType(r));
     
     const filteredArrivals = initialArrivals.filter(b => 
       b.guest_name.toLowerCase().includes(term) || 
@@ -89,7 +111,7 @@ export default function ReceptionHub({
     );
 
     return { filteredRooms, filteredArrivals };
-  }, [search, roomStatus, initialArrivals]);
+  }, [search, statusFilter, typeFilter, roomStatus, initialArrivals]);
 
   const stats = {
     total: roomStatus.length,
@@ -101,39 +123,81 @@ export default function ReceptionHub({
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20">
       {/* Header & Search */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-serif text-white">Reception Hub</h1>
-          <p className="text-slate-400 mt-1">Live room status & guest management.</p>
+      <header className="flex flex-col gap-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-serif text-white">Reception Hub</h1>
+            <p className="text-slate-400 mt-1">Live room status & guest management.</p>
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            <Link 
+              href="/admin/reports"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-bold text-xs uppercase tracking-widest transition-all"
+            >
+              <HiOutlineChartBar className="text-lg text-emerald-500" />
+              Financial Reports
+            </Link>
+            <Link 
+              href="/admin/bookings/walk-in"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gold-500 text-slate-950 hover:bg-gold-600 font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-gold-500/20 active:scale-95"
+            >
+              <HiOutlinePlus className="text-lg" />
+              Add Walk-in
+            </Link>
+          </div>
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative w-full sm:w-80">
+
+        {/* Search and Filters Bar */}
+        <div className="flex flex-col lg:flex-row gap-6 p-6 bg-white/5 rounded-3xl border border-white/5 items-center">
+          <div className="relative w-full lg:w-96">
             <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xl" />
             <input 
               type="text" 
               placeholder="Search Room, Guest, or Type..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-gold-500/50 transition-colors"
+              className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-gold-500/50 transition-all"
             />
           </div>
-          <div className="flex flex-wrap gap-3">
-          <Link 
-            href="/admin/reports"
-            className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-bold text-xs uppercase tracking-widest transition-all"
-          >
-            <HiOutlineChartBar className="text-lg text-emerald-500" />
-            Financial Reports
-          </Link>
-          <Link 
-            href="/admin/bookings/walk-in"
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gold-500 text-slate-950 hover:bg-gold-600 font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-gold-500/20 active:scale-95"
-          >
-            <HiOutlinePlus className="text-lg" />
-            Add Walk-in
-          </Link>
-        </div>
+
+          <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+            <div className="flex items-center gap-2 text-slate-500 mr-2">
+              <HiOutlineFilter className="text-lg" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Filters</span>
+            </div>
+            
+            {/* Status Filters */}
+            <div className="flex p-1 bg-slate-950/50 rounded-xl border border-white/5 gap-1">
+              {(["all", "available", "occupied", "booked"] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={clsx(
+                    "px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all",
+                    statusFilter === status 
+                      ? "bg-gold-500 text-slate-950" 
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+
+            {/* Type Filter */}
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="bg-slate-950/50 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-300 focus:outline-none focus:border-gold-500/50 transition-all appearance-none cursor-pointer pr-10 relative"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '12px' }}
+            >
+              <option value="all">All Room Types</option>
+              {roomTypes.filter(t => t !== "all").map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </header>
 
@@ -215,10 +279,16 @@ export default function ReceptionHub({
 
       {/* Visual Room Grid Section */}
       <section className="space-y-4">
-        <div className="flex items-center gap-2 text-slate-400">
-          <HiOutlineKey className="text-2xl" />
-          <h2 className="text-xl font-serif">Live Room Status</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-slate-400">
+            <HiOutlineKey className="text-2xl" />
+            <h2 className="text-xl font-serif">Live Room Status</h2>
+          </div>
+          <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+            Showing {filteredData.filteredRooms.length} of {roomStatus.length} Rooms
+          </div>
         </div>
+        
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
           {filteredData.filteredRooms.map((room) => (
             <div 
@@ -258,6 +328,12 @@ export default function ReceptionHub({
               )} />
             </div>
           ))}
+          
+          {filteredData.filteredRooms.length === 0 && (
+            <div className="col-span-full py-20 text-center text-slate-600 italic text-sm border border-dashed border-white/5 rounded-2xl bg-white/2">
+              No rooms match the selected filters.
+            </div>
+          )}
         </div>
       </section>
 
@@ -318,13 +394,13 @@ export default function ReceptionHub({
                             <div className="p-4 bg-white/2 border border-white/5 rounded-2xl">
                                <p className="text-slate-600 text-[10px] uppercase tracking-widest mb-1 flex items-center gap-2">
                                   <HiOutlineCalendar /> Check In
-                               </p>
+                                </p>
                                <p className="text-sm font-medium">{selectedRoom.checkInDate ? new Date(selectedRoom.checkInDate).toLocaleDateString('en-GB') : '-'}</p>
                             </div>
                             <div className="p-4 bg-white/2 border border-white/5 rounded-2xl">
                                <p className="text-slate-600 text-[10px] uppercase tracking-widest mb-1 flex items-center gap-2">
                                   <HiOutlineCalendar /> Check Out
-                               </p>
+                                </p>
                                <p className="text-sm font-medium">{selectedRoom.checkOutDate ? new Date(selectedRoom.checkOutDate).toLocaleDateString('en-GB') : '-'}</p>
                             </div>
                          </div>
@@ -374,5 +450,3 @@ export default function ReceptionHub({
     </div>
   );
 }
-
-import { AnimatePresence, motion } from "framer-motion";
