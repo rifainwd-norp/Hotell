@@ -3,14 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import MagneticButton from "./magnetic-button";
-
-interface ExperienceItem {
-  id: string;
-  title: string;
-  tagline: string;
-  description: string;
-  image_url: string;
-}
+import { ExperienceItem } from "@/lib/types";
 
 interface ExperienceProps {
   initialData?: ExperienceItem[];

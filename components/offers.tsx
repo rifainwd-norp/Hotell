@@ -3,15 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import MagneticButton from "./magnetic-button";
-
-interface OfferItem {
-  id: string;
-  title: string;
-  tag: string;
-  description: string;
-  image_url: string;
-  link_url: string;
-}
+import { OfferItem } from "@/lib/types";
 
 interface OffersProps {
   initialData?: OfferItem[];

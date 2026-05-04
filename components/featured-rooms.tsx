@@ -4,16 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import MagneticButton from "./magnetic-button";
 import Link from "next/link";
-
-interface Room {
-  id: string;
-  slug: string;
-  name: string;
-  price: number;
-  description: string;
-  images: string; // From DB it's a JSON string
-  tagline?: string;
-}
+import { Room } from "@/lib/types";
 
 interface FeaturedRoomsProps {
   initialData?: Room[];
@@ -99,7 +90,7 @@ export default function FeaturedRooms({ initialData = [] }: FeaturedRoomsProps) 
                 firstImage = Array.isArray(parsed) ? parsed[0] : parsed;
               }
             } catch {
-              firstImage = room.images;
+              firstImage = room.images || "";
             }
 
             return (

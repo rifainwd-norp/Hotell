@@ -2,14 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoStar } from "react-icons/io5";
-
-interface Testimonial {
-  id: string;
-  author: string;
-  date: string;
-  quote: string;
-  rating: number;
-}
+import { Testimonial } from "@/lib/types";
 
 interface TestimonialsProps {
   initialData?: Testimonial[];

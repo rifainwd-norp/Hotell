@@ -47,3 +47,20 @@ export interface Testimonial {
   rating: number;
   created_at: string;
 }
+
+export interface ExperienceItem {
+  id: string;
+  title: string;
+  tagline: string;
+  description: string;
+  image_url: string;
+}
+
+export interface OfferItem {
+  id: string;
+  title: string;
+  tag: string;
+  description: string;
+  image_url: string;
+  link_url: string;
+}
