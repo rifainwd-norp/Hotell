@@ -3,14 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import MagneticButton from "./magnetic-button";
-
-interface GalleryItem {
-  id: string;
-  category: string;
-  title: string;
-  tag: string;
-  image_url: string;
-}
+import { GalleryItem } from "@/lib/types";
 
 interface GalleryClientProps {
   initialData: GalleryItem[];
